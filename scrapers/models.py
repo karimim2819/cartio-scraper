@@ -38,13 +38,8 @@ class FlyerStoreBranch(models.Model):
         on_delete=models.CASCADE,
         related_name='branches',
     )
-    address = models.CharField(max_length=255)
-    city = models.CharField(max_length=100)
     province = models.CharField(max_length=50)
     postal_code = models.CharField(max_length=10)
-    latitude = models.FloatField()
-    longitude = models.FloatField()
-    is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -53,11 +48,10 @@ class FlyerStoreBranch(models.Model):
         managed = True
         indexes = [
             models.Index(fields=['province']),
-            models.Index(fields=['latitude', 'longitude']),
         ]
 
     def __str__(self) -> str:
-        return f'{self.store.name} — {self.city}, {self.province}'
+        return f'{self.store.name} — {self.province} {self.postal_code}'
 
 
 class FlyerCycle(models.Model):

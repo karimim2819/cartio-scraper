@@ -12,9 +12,9 @@ class FlyerStoreAdmin(admin.ModelAdmin):
 
 @admin.register(FlyerStoreBranch)
 class FlyerStoreBranchAdmin(admin.ModelAdmin):
-    list_display = ('store', 'city', 'province', 'postal_code', 'is_active')
-    list_filter = ('province', 'is_active', 'store')
-    search_fields = ('city', 'address', 'postal_code')
+    list_display = ('store', 'province', 'postal_code')
+    list_filter = ('store', 'province')
+    search_fields = ('store__name', 'province', 'postal_code')
 
 
 @admin.register(FlyerCycle)
