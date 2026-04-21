@@ -1,4 +1,9 @@
 django==5.2.*
-psycopg2-binary==2.9.*
-playwright==1.44.*
+# psycopg2-binary often falls back to a C compile on newer Python/macOS and
+# fails without libpq headers. psycopg[binary] (v3) ships wheels and works
+# with Django's same postgresql backend — no settings change needed.
+psycopg[binary]==3.2.*
+# playwright 1.44 pins greenlet 3.0.x, which has no Python 3.13 wheels and
+# fails to compile. 1.48+ pulls greenlet 3.1+ with wheels for 3.12/3.13.
+playwright>=1.48,<2
 django-environ==0.11.*
