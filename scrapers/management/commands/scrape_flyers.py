@@ -9,7 +9,7 @@ will be implemented in scrape_store.
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from scrapers.models import FlyerStore, ScrapeLog
+from scrapers.models import FlyerCycle, FlyerStore, ScrapeLog
 
 
 def scrape_store(store: FlyerStore) -> int:
@@ -48,6 +48,17 @@ class Command(BaseCommand):
         self.stdout.write(f'Scraping {total} store(s)...')
 
         for store in stores:
+            today = timezone.now().date()
+            active_cycle = FlyerCycle.objects.filter(
+                store=store,
+                is_current=True,
+                valid_to__gte=today,
+            ).exists()
+
+            if active_cycle:
+                self.stdout.write(f'Skipping {store.name} — flyer still valid')
+                continue
+
             self.stdout.write(f'→ {store.name} ({store.region}) starting...')
 
             log = ScrapeLog.objects.create(
@@ -67,6 +78,8 @@ class Command(BaseCommand):
                     self.style.ERROR(f'  ✗ {store.name} failed: {exc}')
                 )
                 continue
+
+            # TODO: create FlyerCycle(valid_from, valid_to) after scraping
 
             log.status = ScrapeLog.STATUS_SUCCESS
             log.items_scraped = items_scraped

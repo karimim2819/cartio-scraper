@@ -31,12 +31,76 @@ class FlyerStore(models.Model):
         return f'{self.name} ({self.region})'
 
 
+class FlyerStoreBranch(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    store = models.ForeignKey(
+        FlyerStore,
+        on_delete=models.CASCADE,
+        related_name='branches',
+    )
+    address = models.CharField(max_length=255)
+    city = models.CharField(max_length=100)
+    province = models.CharField(max_length=50)
+    postal_code = models.CharField(max_length=10)
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'flyer_store_branches'
+        managed = True
+        indexes = [
+            models.Index(fields=['province']),
+            models.Index(fields=['latitude', 'longitude']),
+        ]
+
+    def __str__(self) -> str:
+        return f'{self.store.name} — {self.city}, {self.province}'
+
+
+class FlyerCycle(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    store = models.ForeignKey(
+        FlyerStore,
+        on_delete=models.CASCADE,
+        related_name='flyer_cycles',
+    )
+    province = models.CharField(max_length=50, null=True, blank=True)
+    valid_from = models.DateField()
+    valid_to = models.DateField()
+    scraped_at = models.DateTimeField(auto_now_add=True)
+    is_current = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'flyer_cycles'
+        managed = True
+        indexes = [
+            models.Index(fields=['store', 'is_current']),
+            models.Index(fields=['valid_to']),
+            models.Index(fields=['province']),
+        ]
+
+    def __str__(self) -> str:
+        region = self.province or 'national'
+        return f'{self.store.name} ({region}) {self.valid_from}–{self.valid_to}'
+
+
 class FlyerItem(models.Model):
     id = models.BigAutoField(primary_key=True)
     store = models.ForeignKey(
         FlyerStore,
         on_delete=models.PROTECT,
         related_name='items',
+    )
+    province = models.CharField(max_length=50, null=True, blank=True)
+    cycle = models.ForeignKey(
+        FlyerCycle,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='flyer_items',
     )
     name = models.CharField(max_length=255)
     price = models.DecimalField(max_digits=8, decimal_places=2, null=True)
