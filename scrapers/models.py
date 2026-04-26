@@ -97,6 +97,9 @@ class FlyerItem(models.Model):
         related_name='flyer_items',
     )
     name = models.CharField(max_length=255)
+    # Laravel/Cartio legacy NOT NULL. The scraper sets this equal to ``name``
+    # (verbatim); matching logic should use ``name`` / ``raw_text``, not this.
+    normalized_name = models.CharField(max_length=255)
     price = models.DecimalField(max_digits=8, decimal_places=2, null=True)
     original_price = models.DecimalField(
         max_digits=8, decimal_places=2, null=True, blank=True,
